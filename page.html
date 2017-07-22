@@ -7,7 +7,7 @@
         this.gender=gender
       }
       player.prototype = {
-        weapons: [],
+        items: [],
         alive: true,
         uninjured: true,
         kills: 0
@@ -19,7 +19,6 @@
         this.plrCount=(template+" ").split('%').length - 1
       }
       event.prototype = {
-        constructor: event,
         getStr: function(plrs) {
           var str=this.template
           plrs.forEach(function(plr,index) {
@@ -28,6 +27,7 @@
           return str
         }
       }
+      var nullEvent=new event('',0)
 
       function killEvent(template,probability,amtKillers) {
         event.call(this,template,probability)
@@ -43,14 +43,33 @@
         })
       }
 
+      function item(name,events,disables) {
+        this.name=name
+        this.events=events//which events having this item can cause
+        this.disables=disables//which events this item makes not happen
+      }
+      item.prototype = {
+        removeTableItems:function(table) {
+          this.disables.forEach(function(disable) {
+            table[disable]=nullEvent
+          })
+          return table
+        }
+      }
+      var axe=new item('axe',[new killEvent('%0; killed %1; with an axe.',7,1)],[0])
+
       var events=[new killEvent('%0; killed %1;.',5,1),
         new killEvent('%0; and %1; practiced unsafe dating and died.',1,0),
         new killEvent('%0; committed sudoku.',2,0)]
       var players=[new player('thumbtack',true),new player('uwe',true),new player('steven',true),new player('erikkk',true),
         new player('michael',true),new player('lucio',false),new player('jarry',true)]
+      players[1].items=[axe]
       var itemRegions=[{name:'cornucopia',items:[]}]
       var today=1
 
+      function putText(text) {
+        document.getElementById('text').innerHTML+='<p>'+text+'</p>'
+      }
       function fixEventTableProbabilities(tab) {
         var tab2=[]
         tab.forEach(function(item){
@@ -59,18 +78,6 @@
           }
         })
         return tab2
-      }
-      events = fixEventTableProbabilities(events)
-
-      var axe={
-        name:'axe',
-        events:fixEventTableProbabilities([ //which events having this item can cause
-          new killEvent('%0; killed %1; with an axe.',7,1)]),
-        disbles:[0] //which events this item makes not happen
-      }
-
-      function putText(text) {
-        document.getElementById('text').innerHTML+='<p>'+text+'</p>'
       }
 
       function doEvents() {
@@ -89,7 +96,18 @@
           playersLeft.splice(index,1)
 
           if (currentEvent == null) {
-            do { currentEvent = events[Math.floor(Math.random()*events.length)] }
+            var tempEvents = events.slice(0)
+            currentPlrs[0].items.forEach(function(i) {
+              tempEvents=i.removeTableItems(tempEvents)
+              i.events.forEach(function(e) {
+                tempEvents = tempEvents.concat(e)
+              })
+            })
+            tempEvents=fixEventTableProbabilities(tempEvents)
+            if (currentPlrs[0].name=='uwe'){
+              console.log(tempEvents)
+            }
+            do { currentEvent = tempEvents[Math.floor(Math.random()*tempEvents.length)] }
             while (currentEvent.plrCount > playersLeft.length + 1)
           }
 
