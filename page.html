@@ -80,7 +80,8 @@
         }
       }
       var axe=new item('an','axe',[new killEvent('%0; killed %1; with an axe.',7,1)],[0],5)
-      var disc=new item('an','Emoji Movie disc',[new event('%0; watched the Emoji Movie.',4)],[4],2)
+      var disc=new item('an','Emoji Movie disc',[new event('%0; watched the Emoji Movie.',4)],[],2)
+      var spinner=new item('a','fidget spinner',[new killEvent('%0; used a fidget spinner and died of cancer.',1)],[],2)
 
       var items=[axe,disc]
       var events=[new killEvent('%0; killed %1;.',6,1),
