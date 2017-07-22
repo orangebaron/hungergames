@@ -32,7 +32,6 @@
       function killEvent(template,probability,amtKillers) {
         event.call(this,template,probability)
         this.amtKillers=amtKillers
-        console.log(this.amtKillers)
       }
       killEvent.prototype = Object.create(event.prototype)
       killEvent.prototype.outcome = function(plrs) {
@@ -49,16 +48,26 @@
         new killEvent('%0; committed sudoku.',2,0)]
       var players=[new player('thumbtack',true),new player('uwe',true),new player('steven',true),new player('erikkk',true),
         new player('michael',true),new player('lucio',false),new player('jarry',true)]
+      var itemRegions=[{name:'cornucopia',items:[]}]
       var today=1
 
-      var events2=[]
-      events.forEach(function(item){
-        for (var i=0;i<item.probability;i++){
-          events2.push(item)
-        }
-      })
-      events=events2
-      console.log(events2)
+      function fixEventTableProbabilities(tab) {
+        var tab2=[]
+        tab.forEach(function(item){
+          for (var i=0;i<item.probability;i++){
+            tab2.push(item)
+          }
+        })
+        return tab2
+      }
+      events = fixEventTableProbabilities(events)
+
+      var axe={
+        name:'axe',
+        events:fixEventTableProbabilities([ //which events having this item can cause
+          new killEvent('%0; killed %1; with an axe.',7,1)]),
+        disbles:[0] //which events this item makes not happen
+      }
 
       function putText(text) {
         document.getElementById('text').innerHTML+='<p>'+text+'</p>'
