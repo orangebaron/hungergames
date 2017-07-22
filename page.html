@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script>
+      function player(name,gender) {
+        this.name=name
+        this.gender=gender
+      }
+      player.prototype = {
+        weapons: [],
+        alive: true,
+        uninjured: true,
+        kills: 0
+      }
+
+      function event(template,probability) { //probility is relative; 4 is double the probability of 2 and half of 8
+        this.template=template
+        this.probability=probability
+        this.plrCount=(template+" ").split('%').length - 1
+      }
+      event.prototype = {
+        constructor: event,
+        getStr: function(plrs) {
+          var str=this.template
+          plrs.forEach(function(plr,index) {
+            str=str.replace('%'+index+';','<b>'+plr.name+'</b>')
+          })
+          return str
+        }
+      }
+
+      function killEvent(template,probability,amtKillers) {
+        event.call(this,template,probability)
+        this.amtKillers=amtKillers
+        console.log(this.amtKillers)
+      }
+      killEvent.prototype = Object.create(event.prototype)
+      killEvent.prototype.outcome = function(plrs) {
+        var amtKillers = this.amtKillers
+        plrs.forEach(function(plr,index) {
+          if (index>=amtKillers) {
+            plr.alive=false
+          }
+        })
+      }
+
+      var events=[new killEvent('%0; killed %1;.',5,1),
+        new killEvent('%0; and %1; practiced unsafe dating and died.',1,0),
+        new killEvent('%0; committed sudoku.',2,0)]
+      var players=[new player('thumbtack',true),new player('uwe',true),new player('steven',true),new player('erikkk',true),
+        new player('michael',true),new player('lucio',false),new player('jarry',true)]
+      var today=1
+
+      var events2=[]
+      events.forEach(function(item){
+        for (var i=0;i<item.probability;i++){
+          events2.push(item)
+        }
+      })
+      events=events2
+      console.log(events2)
+
+      function putText(text) {
+        document.getElementById('p').innerHTML+=text+'<br>'
+      }
+
+      function doEvents() {
+        var playersLeft=[]
+        players.forEach(function(plr){
+          if (plr.alive) {
+            playersLeft.push(plr)
+          }
+        })
+
+        var currentEvent
+        var currentPlrs = []
+        while (playersLeft.length>0) {
+          var index=Math.floor(Math.random()*playersLeft.length)
+          currentPlrs.push(playersLeft[index])
+          playersLeft.splice(index,1)
+
+          if (currentEvent == null) {
+            do { currentEvent = events[Math.floor(Math.random()*events.length)] }
+            while (currentEvent.plrCount > playersLeft.length + 1)
+          }
+
+          console.assert(currentEvent.plrCount >= currentPlrs.length)
+          if (currentEvent.plrCount == currentPlrs.length) {
+            putText(currentEvent.getStr(currentPlrs))
+            currentEvent.outcome(currentPlrs)
+            currentPlrs=[]
+            currentEvent=null
+          }
+        }
+      }
+
+      function displayDead() {
+        players.forEach(function(plr) {
+          if (plr.alive) {
+            putText(plr.name+' is alive.')
+          }
+          else if (plr.deathDate != null) {
+            putText(plr.name+' died on day '+plr.deathDate+'.')
+          }
+          else {
+            putText(plr.name+' died.')
+            plr.deathDate=today
+          }
+        })
+      }
+    </script>
+  </head>
+  <body>
+    <p id='p'></p>
+    <script>
+      doEvents()
+      putText('RESULTS:')
+      displayDead()
+    </script>
+  </body>
+</html>
