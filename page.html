@@ -9,7 +9,6 @@
       player.prototype = {
         items: [],
         alive: true,
-        uninjured: true,
         kills: 0
       }
 
@@ -44,13 +43,14 @@
         })
       }
 
-      function pickUpEvent(template,probability) {
+      function pickUpEvent(template,probability,availableItems) {
         event.call(this,template,probability)
         this.plrCount=(template.replace('%i;','')+' ').split('%').length - 1
+        this.availableItems=availableItems
       }
       pickUpEvent.prototype = Object.create(event.prototype)
       pickUpEvent.prototype.outcome = function(plrs) {
-        var item = items[Math.floor(Math.random()*items.length)]
+        var item = this.availableItems[Math.floor(Math.random()*this.availableItems.length)]
         this.item=item //temporarily, for reference in getStr
         plrs.forEach(function(plr) {
           plr.items.push(item)
@@ -80,15 +80,15 @@
       }
       var axe=new item('an','axe',[new killEvent('%0; killed %1; with an axe.',7,1)],[0])
 
+      var items=[axe]
       var events=[new killEvent('%0; killed %1;.',9,1),
         new killEvent('%0; and %1; practiced unsafe dating and died.',1,0),
         new killEvent('%0; committed sudoku.',2,0),
-        new pickUpEvent('%0; found %i;.',1)]
-      cornucopiaEvents=[new pickUpEvent('%0; picked up %i; from the cornucopia.',9),
+        new pickUpEvent('%0; recieved %i; from a sponsor.',1,items)]
+      cornucopiaEvents=[new pickUpEvent('%0; picked up %i; from the cornucopia.',9,items),
         new event('%0; ran from the cornucopia.',9)]
       var players=[new player('thumbtack',true),new player('uwe',true),new player('steven',true),new player('erikkk',true),
         new player('michael',true),new player('lucio',false),new player('jarry',true)]
-      var items=[axe]
       var today=1
 
       function putText(text) {
@@ -103,6 +103,15 @@
         })
         return tab2
       }
+      function amtAlive() {
+        var alive=0
+        players.forEach(function(plr){
+          if (plr.alive) {
+            alive++
+          }
+        })
+        return alive
+      }
 
       function doEvents() {
         var playersLeft=[]
@@ -114,7 +123,7 @@
 
         var currentEvent
         var currentPlrs = []
-        while (playersLeft.length>0) {
+        while (playersLeft.length>0 && amtAlive()>1) {
           var index=Math.floor(Math.random()*playersLeft.length)
           currentPlrs.push(playersLeft[index])
           playersLeft.splice(index,1)
@@ -146,9 +155,15 @@
       }
 
       function displayDead() {
+        var alive=amtAlive()
         players.forEach(function(plr) {
           if (plr.alive) {
-            putText(plr.name+' is alive.')
+            if (alive>1) {
+              putText(plr.name+' is alive.')
+            }
+            else {
+              putText(plr.name+' is the victor!')
+            }
           }
           else if (plr.deathDate != null) {
             putText(plr.name+' died on day '+plr.deathDate+'.')
@@ -164,7 +179,7 @@
   <body>
     <div id='text'></div>
     <script>
-      for (;today<10;today++) {
+      for (;amtAlive()>1;today++) {
         putText('DAY '+today+':')
         doEvents()
         putText('RESULTS:')
