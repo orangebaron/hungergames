@@ -5,9 +5,9 @@
       function player(name,gender) {
         this.name=name
         this.gender=gender
+        this.items=[]
       }
       player.prototype = {
-        items: [],
         alive: true,
         kills: 0
       }
@@ -45,8 +45,8 @@
 
       function pickUpEvent(template,probability,availableItems) {
         event.call(this,template,probability)
-        this.plrCount=(template.replace('%i;','')+' ').split('%').length - 1
-        this.availableItems=availableItems
+        this.plrCount=(template.replace('%i;','')).split('%').length - 1
+        this.availableItems=fixEventTableProbabilities(availableItems)
       }
       pickUpEvent.prototype = Object.create(event.prototype)
       pickUpEvent.prototype.outcome = function(plrs) {
@@ -64,11 +64,12 @@
         return str
       }
 
-      function item(article,name,events,disables) {
+      function item(article,name,events,disables,probability) {
         this.article=article
         this.name=name
         this.events=events//which events having this item can cause
         this.disables=disables//which events this item makes not happen
+        this.probability=probability
       }
       item.prototype = {
         removeTableItems:function(table) {
@@ -78,14 +79,17 @@
           return table
         }
       }
-      var axe=new item('an','axe',[new killEvent('%0; killed %1; with an axe.',7,1)],[0])
+      var axe=new item('an','axe',[new killEvent('%0; killed %1; with an axe.',7,1)],[0],5)
+      var disc=new item('an','Emoji Movie disc',[new event('%0; watched the Emoji Movie.',4)],[4],2)
 
-      var items=[axe]
-      var events=[new killEvent('%0; killed %1;.',9,1),
+      var items=[axe,disc]
+      var events=[new killEvent('%0; killed %1;.',6,1),
         new killEvent('%0; and %1; practiced unsafe dating and died.',1,0),
-        new killEvent('%0; committed sudoku.',2,0),
-        new pickUpEvent('%0; recieved %i; from a sponsor.',1,items)]
-      cornucopiaEvents=[new pickUpEvent('%0; picked up %i; from the cornucopia.',9,items),
+        new event('%0; and %1; practiced safe dating.',1),
+        new killEvent('%0; committed sudoku.',1,0),
+        new pickUpEvent('%0; recieved %i; from a sponsor.',1,items),
+        new event('%0; tried the blue whale challenge.',3)]
+      cornucopiaEvents=[new pickUpEvent('%0; picked up %i; from the cornucopia.',20,items),
         new event('%0; ran from the cornucopia.',9)]
       var players=[new player('thumbtack',true),new player('uwe',true),new player('steven',true),new player('erikkk',true),
         new player('michael',true),new player('lucio',false),new player('jarry',true)]
