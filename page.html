@@ -16,7 +16,7 @@
       function event(template,probability) { //probility is relative; 4 is double the probability of 2 and half of 8
         this.template=template
         this.probability=probability
-        this.plrCount=(template+" ").split('%').length - 1
+        this.plrCount=(template+' ').split('%').length - 1
       }
       event.prototype = {
         getStr: function(plrs) {
@@ -25,7 +25,8 @@
             str=str.replace('%'+index+';','<b>'+plr.name+'</b>')
           })
           return str
-        }
+        },
+        outcome: function(plrs){}
       }
       var nullEvent=new event('',0)
 
@@ -43,7 +44,28 @@
         })
       }
 
-      function item(name,events,disables) {
+      function pickUpEvent(template,probability) {
+        event.call(this,template,probability)
+        this.plrCount=(template.replace('%i;','')+' ').split('%').length - 1
+      }
+      pickUpEvent.prototype = Object.create(event.prototype)
+      pickUpEvent.prototype.outcome = function(plrs) {
+        var item = items[Math.floor(Math.random()*items.length)]
+        this.item=item //temporarily, for reference in getStr
+        plrs.forEach(function(plr) {
+          plr.items.push(item)
+        })
+      }
+      pickUpEvent.prototype.getStr = function(plrs) {
+        var str=this.template.replace('%i;',this.item.article+' '+this.item.name)
+        plrs.forEach(function(plr,index) {
+          str=str.replace('%'+index+';','<b>'+plr.name+'</b>')
+        })
+        return str
+      }
+
+      function item(article,name,events,disables) {
+        this.article=article
         this.name=name
         this.events=events//which events having this item can cause
         this.disables=disables//which events this item makes not happen
@@ -56,15 +78,17 @@
           return table
         }
       }
-      var axe=new item('axe',[new killEvent('%0; killed %1; with an axe.',7,1)],[0])
+      var axe=new item('an','axe',[new killEvent('%0; killed %1; with an axe.',7,1)],[0])
 
-      var events=[new killEvent('%0; killed %1;.',5,1),
+      var events=[new killEvent('%0; killed %1;.',9,1),
         new killEvent('%0; and %1; practiced unsafe dating and died.',1,0),
-        new killEvent('%0; committed sudoku.',2,0)]
+        new killEvent('%0; committed sudoku.',2,0),
+        new pickUpEvent('%0; found %i;.',1)]
+      cornucopiaEvents=[new pickUpEvent('%0; picked up %i; from the cornucopia.',9),
+        new event('%0; ran from the cornucopia.',9)]
       var players=[new player('thumbtack',true),new player('uwe',true),new player('steven',true),new player('erikkk',true),
         new player('michael',true),new player('lucio',false),new player('jarry',true)]
-      players[1].items=[axe]
-      var itemRegions=[{name:'cornucopia',items:[]}]
+      var items=[axe]
       var today=1
 
       function putText(text) {
@@ -97,6 +121,9 @@
 
           if (currentEvent == null) {
             var tempEvents = events.slice(0)
+            if (today==1) {
+              tempEvents=tempEvents.concat(cornucopiaEvents)
+            }
             currentPlrs[0].items.forEach(function(i) {
               tempEvents=i.removeTableItems(tempEvents)
               i.events.forEach(function(e) {
@@ -104,17 +131,14 @@
               })
             })
             tempEvents=fixEventTableProbabilities(tempEvents)
-            if (currentPlrs[0].name=='uwe'){
-              console.log(tempEvents)
-            }
             do { currentEvent = tempEvents[Math.floor(Math.random()*tempEvents.length)] }
             while (currentEvent.plrCount > playersLeft.length + 1)
           }
 
           console.assert(currentEvent.plrCount >= currentPlrs.length)
           if (currentEvent.plrCount == currentPlrs.length) {
-            putText(currentEvent.getStr(currentPlrs))
             currentEvent.outcome(currentPlrs)
+            putText(currentEvent.getStr(currentPlrs))
             currentPlrs=[]
             currentEvent=null
           }
@@ -140,9 +164,12 @@
   <body>
     <div id='text'></div>
     <script>
-      doEvents()
-      putText('RESULTS:')
-      displayDead()
+      for (;today<10;today++) {
+        putText('DAY '+today+':')
+        doEvents()
+        putText('RESULTS:')
+        displayDead()
+      }
     </script>
   </body>
 </html>
