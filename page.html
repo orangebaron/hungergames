@@ -112,7 +112,7 @@
         })
       }
       pickUpEvent.prototype.getStr = function(plrs) {
-        var str=this.template.replace('%i;',this.item.article+' '+this.item.name)
+        var str=this.template.replace('%i;',this.item.article+' <b class="item">'+this.item.name+'</b>')
         plrs.forEach(function(plr,index) {
           str=str.replace('%'+index+';','<b>'+plr.name+'</b>')
         })
@@ -149,12 +149,21 @@
         new pickUpEvent('%0; recieved %i; from a sponsor.',1,items),
         new injureEvent('%0; tried the blue whale challenge.',2,0),
         new injureEvent('%0; punched %1; in the face.',3,1)]
-      cornucopiaEvents=[new pickUpEvent('%0; picked up %i; from the cornucopia.',2,items),
+      cornucopiaEvents=[new pickUpEvent('%0; picked up %i; from the cornucopia.',3,items),
         new event('%0; ran from the cornucopia.',1),
         new killEvent('%0; killed %1; at the cornucopia.',1,1)]
       var players=[new player('thumbtack',true),new player('uwe',true),new player('steven',true),new player('erikkk',true),
         new player('michael',true),new player('lucio',false),new player('jarry',true)]
       var today=1
+
+      events[1].getStr = function(plrs) {
+        if (plrs[1].items.indexOf(con)==-1) {
+          return con.events[0].getStr(plrs)
+        }
+        else {
+          return this.template.replace('%0;','<b>'+plrs[0].name+'</b>').replace('%1;','<b>'+plrs[1].name+'</b>')
+        }
+      }
 
       function putText(text) {
         document.getElementById('text').innerHTML+='<p>'+text+'</p>'
@@ -242,10 +251,32 @@
           }
         })
       }
+
+      function displayVictor() {
+        var alive=amtAlive()
+        if (alive==1) {
+          players.forEach(function(plr) {
+            if (plr.alive) {
+              putText('<b style="color: yellow">'+plr.name+' is the victor!</b>')
+            }
+          })
+        }
+        else if (alive==0) {
+          putText('<b style="color: red">There was no victor.</b>')
+        }
+      }
     </script>
+    <style>
+      b {
+        color: orange;
+      }
+      b.item {
+        color: teal;
+      }
+    </style>
   </head>
-  <body>
-    <div id='text'></div>
+  <body style='background-color: #444444'>
+    <div id='text' style='margin-top: 5%; text-align: center; color: white;'></div>
     <script>
       for (;amtAlive()>1;today++) {
         putText('DAY '+today+':')
@@ -253,6 +284,7 @@
         //putText('RESULTS:')
         //displayDead()
       }
+      displayVictor()
     </script>
   </body>
 </html>
