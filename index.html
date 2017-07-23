@@ -163,6 +163,11 @@
           return this.template.replace('%0;','<b>'+plrs[0].name+'</b>').replace('%1;','<b>'+plrs[1].name+'</b>')
         }
       }
+      events[1].outcome = function(plrs) {
+        if (plrs[1].items.indexOf(con)!=-1) {
+          plrs[1].alive=false
+        }
+      }
 
       function putText(text) {
         document.getElementById('text').innerHTML+='<p>'+text+'</p>'
@@ -281,12 +286,21 @@
         for (var i=0;i<amtPlrs;i++) {
           players.push(new player(document.getElementById('plr'+i).value,document.getElementById('gender'+i).value=='M'))
         }
+        runGame()
+      }
+      function runGame() {
+        players.forEach(function(plr) {
+          plr.alive=true
+          plr.injured=false
+          plr.items=[]
+        })
         clearText()
-        for (;amtAlive()>1;today++) {
+        for (today=1;amtAlive()>1;today++) {
           putText('<h4>DAY '+today+':</h4>')
           doEvents()
         }
         displayVictor()
+        putText('<button onClick="runGame()">Play Again</button>')
       }
     </script>
     <style>
