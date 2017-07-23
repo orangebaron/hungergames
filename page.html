@@ -152,8 +152,7 @@
       cornucopiaEvents=[new pickUpEvent('%0; picked up %i; from the cornucopia.',3,items),
         new event('%0; ran from the cornucopia.',1),
         new killEvent('%0; killed %1; at the cornucopia.',1,1)]
-      var players=[new player('thumbtack',true),new player('uwe',true),new player('steven',true),new player('erikkk',true),
-        new player('michael',true),new player('lucio',false),new player('jarry',true)]
+      var players
       var today=1
 
       events[1].getStr = function(plrs) {
