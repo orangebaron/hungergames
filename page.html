@@ -231,7 +231,7 @@
         }
       }
 
-      function displayDead() {
+      /*function displayDead() {
         var alive=amtAlive()
         players.forEach(function(plr) {
           if (plr.alive) {
@@ -250,7 +250,7 @@
             plr.deathDate=today
           }
         })
-      }
+      }*/ //UNUSED
 
       function displayVictor() {
         var alive=amtAlive()
@@ -265,6 +265,30 @@
           putText('<b style="color: red">There was no victor.</b>')
         }
       }
+
+      var amtPlrs
+      function btn1() {
+        amtPlrs = document.getElementById('amtPlrs').value
+        clearText()
+        putText('<h2>Hunger Games Simulator</h2>')
+        putText('Enter Players...')
+        for (var i=0;i<amtPlrs;i++) {
+          putText('<input id="plr'+i+'" type="text"></input><select id="gender'+i+'"><option value="M">M</option><option value="F">F</option></select>')
+        }
+        putText('<button onClick="btn2()">Continue</button>')
+      }
+      function btn2() {
+        players = []
+        for (var i=0;i<amtPlrs;i++) {
+          players.push(new player(document.getElementById('plr'+i).value,document.getElementById('gender'+i).value=='M'))
+        }
+        clearText()
+        for (;amtAlive()>1;today++) {
+          putText('<h4>DAY '+today+':</h4>')
+          doEvents()
+        }
+        displayVictor()
+      }
     </script>
     <style>
       b {
@@ -273,18 +297,18 @@
       b.item {
         color: teal;
       }
+      h2 {
+        color: orange;
+      }
     </style>
   </head>
   <body style='background-color: #444444'>
-    <div id='text' style='margin-top: 5%; text-align: center; color: white;'></div>
-    <script>
-      for (;amtAlive()>1;today++) {
-        putText('DAY '+today+':')
-        doEvents()
-        //putText('RESULTS:')
-        //displayDead()
-      }
-      displayVictor()
-    </script>
+    <div id='text' style='margin-top: 5%; text-align: center; color: white;'>
+      <!-- the inner html of this will be changed by js -->
+      <h2>Hunger Games Simulator</h2>
+      <p>How many players?</p>
+      <input id='amtPlrs' type='number'></input>
+      <button onClick='btn1()'>Continue</button>
+    </div>
   </body>
 </html>
