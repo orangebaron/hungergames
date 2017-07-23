@@ -1,2 +1,0 @@
-# hungergames
-hunger games sim
