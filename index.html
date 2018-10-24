@@ -2,10 +2,11 @@
 <html>
   <head>
     <script>
-      function player(name,gender) {
+      function player(name,gender,score) {
         this.name=name
         this.gender=gender
         this.items=[]
+        this.playerscore=score
       }
       player.prototype = {
         alive: true,
@@ -53,6 +54,7 @@
       function injureEvent(template,probability,amtAttackers) {
         event.call(this,template,probability)
         this.amtAttackers=amtAttackers
+        amtAttackers=amtAttackers+1
       }
       injureEvent.prototype = Object.create(event.prototype)
       injureEvent.prototype.outcome = function(plrs) {
